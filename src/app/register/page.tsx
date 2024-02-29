@@ -1,6 +1,9 @@
-'use client'
+"use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Flip, ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import ReCaptcha from "../../components/ReCaptcha";
 
 interface FormData {
@@ -11,11 +14,12 @@ interface FormData {
 
 
 const Register = (): JSX.Element => {
+  const notify = () => toast("You have registered successfully!");
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
-    email: '',
-    password: '',
-    password2: '',
+    email: "",
+    password: "",
+    password2: "",
   });
 
   const { email, password, password2 } = formData;
@@ -23,26 +27,36 @@ const Register = (): JSX.Element => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  async function sendDataToServer(data : FormData) {
+  async function sendDataToServer(data: FormData) {
     const url = "http://localhost:5000/api/register"; // Replace with your domain in production
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        console.log("Success:", result);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+    try {
+      // Send a POST request
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      // Here you can handle the response
+      const result = await response.json();
+      console.log("Response from the server:", result);
+      // Assuming you would navigate after successful register
+      notify();
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error sending data to server", error.message);
+      }
+      // Handle errors here or rethrow them depending on your needs
+    }
   }
   const [recaptchaValue, setRecaptchaValue] = useState(null);
 
-  const handleReCaptchaChange = (value : any) => {
+  const handleReCaptchaChange = (value: any) => {
     // Here you can implement additional logic when recaptcha value changes
     setRecaptchaValue(value);
   };
@@ -53,7 +67,7 @@ const Register = (): JSX.Element => {
       return;
     }
     // Proceed with form submission or whatever you need to do next
-    sendDataToServer(formData);
+    // sendDataToServer(formData);
   };
   const setAlert = (message: string, type: string) => {
     // Implement alert logic or show the message
@@ -63,10 +77,11 @@ const Register = (): JSX.Element => {
   // Make sure to use an event parameter of type React.FormEvent<HTMLFormElement> and prevent default behavior
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent form from submitting by default
-    if (password !== password2) {
+    if (formData.password !== formData.password2) {
       setAlert("Passwords do not match", "danger");
     } else {
-      handleSubmit();
+      // handleSubmit();
+      sendDataToServer(formData);
     }
   };
   return (
@@ -97,7 +112,9 @@ const Register = (): JSX.Element => {
                 name="email"
                 type="email"
                 value={email}
-                onChange={(e) => onChange(e)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange(e)
+                }
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -117,7 +134,9 @@ const Register = (): JSX.Element => {
               <input
                 id="password1"
                 value={password}
-                onChange={(e) => onChange(e)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange(e)
+                }
                 type="password"
                 name="password"
                 required
@@ -128,7 +147,9 @@ const Register = (): JSX.Element => {
               <input
                 id="password2"
                 value={password2}
-                onChange={(e) => onChange(e)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange(e)
+                }
                 type="password"
                 name="password2"
                 required
@@ -136,7 +157,7 @@ const Register = (): JSX.Element => {
               />
             </div>
           </div>
-          <ReCaptcha onChange={handleReCaptchaChange} />
+          {/* <ReCaptcha onChange={handleReCaptchaChange} /> */}
           <div>
             <button
               type="submit"
@@ -158,7 +179,20 @@ const Register = (): JSX.Element => {
           </button>
         </p>
       </div>
+      <ToastContainer 
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Flip} />
     </div>
+    
   );
 };
 

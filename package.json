@@ -12,8 +12,6 @@
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18",
-    "redux": "^5.0.1",
-    "redux-devtools-extension": "^2.13.9",
     "redux-thunk": "^3.1.0",
     "uuid": "^9.0.1"
   },

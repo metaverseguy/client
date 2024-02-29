@@ -1,22 +1,29 @@
-"use client";
-
+'use client'
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ReCaptcha from "../../components/ReCaptcha";
 
-const Register = () => {
+interface FormData {
+  email: string;
+  password: string;
+  password2: string;
+}
+
+
+const Register = (): JSX.Element => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    password2: "",
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    password: '',
+    password2: '',
   });
 
   const { email, password, password2 } = formData;
-  const onChange = (e) =>
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  async function sendDataToServer(data) {
+  async function sendDataToServer(data : FormData) {
     const url = "http://localhost:5000/api/register"; // Replace with your domain in production
     await fetch(url, {
       method: "POST",
@@ -35,7 +42,7 @@ const Register = () => {
   }
   const [recaptchaValue, setRecaptchaValue] = useState(null);
 
-  const handleReCaptchaChange = (value) => {
+  const handleReCaptchaChange = (value : any) => {
     // Here you can implement additional logic when recaptcha value changes
     setRecaptchaValue(value);
   };
@@ -45,10 +52,17 @@ const Register = () => {
       alert("Please verify that you are not a robot.");
       return;
     }
-    sendDataToServer(formData);
     // Proceed with form submission or whatever you need to do next
+    sendDataToServer(formData);
   };
-  const onSubmit = async () => {
+  const setAlert = (message: string, type: string) => {
+    // Implement alert logic or show the message
+    console.error(`Alert (${type}): ${message}`);
+  };
+
+  // Make sure to use an event parameter of type React.FormEvent<HTMLFormElement> and prevent default behavior
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevent form from submitting by default
     if (password !== password2) {
       setAlert("Passwords do not match", "danger");
     } else {

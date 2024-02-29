@@ -1,20 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+
+interface FormData {
+  email: string;
+  password: string;
+}
 
 const Login = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
 
-  const { email, password } = formData;
-  const onChange = (e) =>
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  async function sendDataToServer(data) {
+  async function sendDataToServer(e: FormEvent) {
+    e.preventDefault(); // Prevent default form submission behavior
     const url = "http://localhost:5000/api/login"; // Replace with your domain in production
     try {
       // Send a POST request
@@ -23,7 +29,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -32,9 +38,13 @@ const Login = () => {
       // Here you can handle the response
       const result = await response.json();
       console.log("Response from the server:", result);
+      // Assuming you would navigate after successful login
+      router.push('/dashboard'); // replace '/dashboard' with the actual path
       return result;
     } catch (error) {
-      console.error("Error sending data to server", error);
+      if (error instanceof Error) {
+        console.error("Error sending data to server", error.message);
+      }
       // Handle errors here or rethrow them depending on your needs
     }
   }
@@ -67,7 +77,7 @@ const Login = () => {
                   id="email"
                   name="email"
                   type="email"
-                  value={email}
+                  value={formData.email}
                   onChange={(e) => onChange(e)}
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -97,7 +107,7 @@ const Login = () => {
                   id="password"
                   name="password"
                   type="password"
-                  value={password}
+                  value={formData.password}
                   onChange={(e) => onChange(e)}
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

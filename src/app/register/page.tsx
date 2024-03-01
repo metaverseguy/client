@@ -31,6 +31,7 @@ const Register = (): JSX.Element => {
     const url = "http://localhost:5000/api/register"; // Replace with your domain in production
     try {
       // Send a POST request
+      console.log(data)
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -69,16 +70,21 @@ const Register = (): JSX.Element => {
     // Proceed with form submission or whatever you need to do next
     // sendDataToServer(formData);
   };
-  const setAlert = (message: string, type: string) => {
-    // Implement alert logic or show the message
-    console.error(`Alert (${type}): ${message}`);
-  };
 
   // Make sure to use an event parameter of type React.FormEvent<HTMLFormElement> and prevent default behavior
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent form from submitting by default
     if (formData.password !== formData.password2) {
-      setAlert("Passwords do not match", "danger");
+      toast.warn('Passwords do not match!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
     } else {
       // handleSubmit();
       sendDataToServer(formData);

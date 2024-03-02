@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Flip, ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import ReCaptcha from "../../components/ReCaptcha";
 
 interface FormData {
@@ -11,7 +11,6 @@ interface FormData {
   password: string;
   password2: string;
 }
-
 
 const Register = (): JSX.Element => {
   const notify = () => toast("You have registered successfully!");
@@ -28,14 +27,15 @@ const Register = (): JSX.Element => {
   };
 
   async function sendDataToServer(data: FormData) {
-    const url = "http://localhost:5000/api/register"; // Replace with your domain in production
+    const url = "http://localhost:5000/api/register";
     try {
       // Send a POST request
-      console.log(data)
+      console.log(data);
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json; charset=utf-8",
         },
         body: JSON.stringify(data),
       });
@@ -47,7 +47,20 @@ const Register = (): JSX.Element => {
       const result = await response.json();
       console.log("Response from the server:", result);
       // Assuming you would navigate after successful register
-      notify();
+      if (result.flag == "success") {
+        notify();
+      } else {
+        toast.warn("Email already exist!", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error sending data to server", error.message);
@@ -75,7 +88,7 @@ const Register = (): JSX.Element => {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent form from submitting by default
     if (formData.password !== formData.password2) {
-      toast.warn('Passwords do not match!', {
+      toast.warn("Passwords do not match!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -84,7 +97,7 @@ const Register = (): JSX.Element => {
         draggable: true,
         progress: undefined,
         theme: "light",
-        });
+      });
     } else {
       // handleSubmit();
       sendDataToServer(formData);
@@ -185,7 +198,7 @@ const Register = (): JSX.Element => {
           </button>
         </p>
       </div>
-      <ToastContainer 
+      <ToastContainer
         position="top-right"
         autoClose={2000}
         hideProgressBar={false}
@@ -196,9 +209,9 @@ const Register = (): JSX.Element => {
         draggable
         pauseOnHover
         theme="light"
-        transition={Flip} />
+        transition={Flip}
+      />
     </div>
-    
   );
 };
 

@@ -3,7 +3,7 @@
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Flip, ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import 'react-toastify/dist/ReactToastify.css';
 
 interface FormData {
   email: string;
@@ -12,7 +12,7 @@ interface FormData {
 
 const Login = () => {
   const router = useRouter();
-  const notify = () => toast("You have successfully logined!");
+  const notify = () => toast("You have successfully signed up!");
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
@@ -42,29 +42,8 @@ const Login = () => {
       const result = await response.json();
       console.log("Response from the server:", result);
       // Assuming you would navigate after successful login
-      if (result.status == "error_email") {
-        toast.error("Invalid Credentials!", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      } else if(result.status == "error_psw") {
-        toast.error("Password incorrect!", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      } else notify();
+      notify();
+      return result;
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error sending data to server", error.message);
@@ -102,9 +81,7 @@ const Login = () => {
                   name="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    onChange(e)
-                  }
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e)}
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
@@ -134,9 +111,7 @@ const Login = () => {
                   name="password"
                   type="password"
                   value={formData.password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    onChange(e)
-                  }
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e)}
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
@@ -164,7 +139,7 @@ const Login = () => {
             </button>
           </p>
         </div>
-        <ToastContainer
+        <ToastContainer 
           position="top-right"
           autoClose={2000}
           hideProgressBar={false}
@@ -175,8 +150,7 @@ const Login = () => {
           draggable
           pauseOnHover
           theme="light"
-          transition={Flip}
-        />
+          transition={Flip} />
       </div>
     </>
   );

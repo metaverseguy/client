@@ -1,36 +1,65 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React from "react";
+import { useState } from "react";
+import { useFormik } from "formik";
+import * as yup from "yup";
 import { useRouter } from "next/navigation";
 import { Flip, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReCaptcha from "../../components/ReCaptcha";
 
-interface FormData {
+interface RegisterFormValues {
+  username: string;
   email: string;
   password: string;
-  password2: string;
+  confirmPassword: string;
 }
 
-const Register = (): JSX.Element => {
+// Define your Yup schema
+const RegisterSchema = yup.object({
+  username: yup
+    .string()
+    .min(3, "Username must be at least 3 characters long")
+    .max(20, "Username cannot be longer than 20 characters"),
+  email: yup
+    .string()
+    .email("Invalid email address"),
+  password: yup
+    .string()
+    .min(6, "Password must be at least 6 characters long")
+    .max(40, "Password must be not at least 6 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{6,}$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    ),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password")], "Passwords must match")
+});
+
+const RegisterPage: React.FC = () => {
   const notify = () => toast("You have registered successfully!");
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-    password2: "",
+  const formik = useFormik<RegisterFormValues>({
+    initialValues: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: RegisterSchema,
+    onSubmit: (values) => {
+      // Handle form submission, e.g., call an API
+      console.log(values);
+    },
   });
 
-  const { email, password, password2 } = formData;
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  async function sendDataToServer(data: FormData) {
+  async function sendDataToServer(data: RegisterFormValues) {
     const url = "http://localhost:5000/api/register";
     try {
       // Send a POST request
-      console.log(data);
+      // console.log(data);
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -45,14 +74,14 @@ const Register = (): JSX.Element => {
       }
       // Here you can handle the response
       const result = await response.json();
-      console.log("Response from the server:", result);
+      // console.log("Response from the server:", result);
       // Assuming you would navigate after successful register
       if (result.flag == "success") {
         notify();
       } else {
         toast.warn("Email already exist!", {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -87,10 +116,10 @@ const Register = (): JSX.Element => {
   // Make sure to use an event parameter of type React.FormEvent<HTMLFormElement> and prevent default behavior
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent form from submitting by default
-    if (formData.password !== formData.password2) {
+    if (formik.values.password !== formik.values.confirmPassword) {
       toast.warn("Passwords do not match!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -100,9 +129,10 @@ const Register = (): JSX.Element => {
       });
     } else {
       // handleSubmit();
-      sendDataToServer(formData);
+      sendDataToServer(formik.values);
     }
   };
+
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -123,6 +153,27 @@ const Register = (): JSX.Element => {
               htmlFor="email"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
+              Username
+            </label>
+            <div className="mt-2">
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                onChange={formik.handleChange}
+                value={formik.values.username}
+                onBlur={formik.handleBlur}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+            </div>
+            {formik.touched.username && formik.errors.username && (
+              <div>{formik.errors.username}</div>
+            )}
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium leading-6 text-gray-900"
+            >
               Email address
             </label>
             <div className="mt-2">
@@ -130,13 +181,15 @@ const Register = (): JSX.Element => {
                 id="email"
                 name="email"
                 type="email"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  onChange(e)
-                }
+                onChange={formik.handleChange}
+                value={formik.values.email}
+                onBlur={formik.handleBlur}
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {formik.touched.email && formik.errors.email && (
+                <div>{formik.errors.email}</div>
+              )}
             </div>
           </div>
 
@@ -151,29 +204,40 @@ const Register = (): JSX.Element => {
             </div>
             <div className="mt-2">
               <input
-                id="password1"
-                value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  onChange(e)
-                }
+                id="password"
+                onChange={formik.handleChange}
+                value={formik.values.password}
+                onBlur={formik.handleBlur}
                 type="password"
                 name="password"
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {formik.touched.password && formik.errors.password && (
+                <div>{formik.errors.password}</div>
+              )}
             </div>
+            <label
+                htmlFor="password"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Confirm Password
+              </label>
             <div className="mt-2">
               <input
-                id="password2"
-                value={password2}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  onChange(e)
-                }
+                id="confirmPassword"
+                name="confirmPassword"
                 type="password"
-                name="password2"
+                onChange={formik.handleChange}
+                value={formik.values.confirmPassword}
+                onBlur={formik.handleBlur}
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {formik.touched.confirmPassword &&
+                formik.errors.confirmPassword && (
+                  <div>{formik.errors.confirmPassword}</div>
+                )}
             </div>
           </div>
           {/* <ReCaptcha onChange={handleReCaptchaChange} /> */}
@@ -215,4 +279,4 @@ const Register = (): JSX.Element => {
   );
 };
 
-export default Register;
+export default RegisterPage;
